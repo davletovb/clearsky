@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, BINARY, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -54,6 +54,6 @@ class ModelFiles(Base):
 
     id = Column(Integer, primary_key=True)
     city_id = Column(Integer, ForeignKey('cities.id'))
-    file = Column(BINARY)
+    file = Column(JSON)
     file_name = Column(String)
     file_date = Column(DateTime)
