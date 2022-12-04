@@ -1,0 +1,51 @@
+id,city_name,province_name,country,country_code,population,city_id,state_code,lat,lon
+1,Toronto,Ontario,Canada,CA,"4,612,191",6167865,8,43.70011,-79.4163
+2,Montréal,Quebec,Canada,CA,"3,268,513",6077243,10,45.50884,-73.58781
+3,Vancouver,British Columbia,Canada,CA,"1,837,969",6173331,2,49.24966,-123.11934
+4,Calgary,Alberta,Canada,CA,"1,019,942",5913490,1,51.05011,-114.08529
+5,Ottawa,Ontario,Canada,CA,"812,129",6094817,8,45.41117,-75.69812
+6,Edmonton,Alberta,Canada,CA,"712,391",5946768,1,53.55014,-113.46871
+7,Mississauga,Ontario,Canada,CA,"668,549",6075357,8,43.5789,-79.6583
+8,North York,Ontario,Canada,CA,"636,000",6091104,8,43.76681,-79.4163
+9,Winnipeg,Manitoba,Canada,CA,"632,063",6183235,3,49.8844,-97.14704
+10,Québec City,Quebec,Canada,CA,"528,595",6325494,10,46.81228,-71.21454
+11,Hamilton,Ontario,Canada,CA,"504,559",5969782,8,43.25011,-79.84963
+12,Brampton,Ontario,Canada,CA,"433,806",5907364,8,43.68341,-79.76633
+13,Kitchener,Ontario,Canada,CA,"409,112",5992996,8,43.42537,-80.5112
+14,Surrey,British Columbia,Canada,CA,"394,976",6159905,2,49.10635,-122.82509
+15,Laval,Quebec,Canada,CA,"376,845",6050610,10,45.56995,-73.692
+16,Halifax,Nova Scotia,Canada,CA,"359,111",6324729,7,44.64533,-63.57239
+17,London,Ontario,Canada,CA,"346,765",6058560,8,42.98339,-81.23304
+18,Victoria,British Columbia,Canada,CA,"289,625",6174041,2,48.43294,-123.3693
+19,Windsor,Ontario,Canada,CA,"278,013",6182962,8,42.30008,-83.01654
+20,Oshawa,Ontario,Canada,CA,"247,989",6094578,8,43.90012,-78.84957
+21,Gatineau,Quebec,Canada,CA,"242,124",5959974,10,45.47723,-75.70164
+22,Vaughan,Ontario,Canada,CA,"238,866",6173577,8,43.8361,-79.49827
+23,Longueuil,Quebec,Canada,CA,"229,330",6059891,10,45.53121,-73.51806
+24,Burnaby,British Columbia,Canada,CA,"202,799",5911606,2,49.26636,-122.95263
+25,Ladner,British Columbia,Canada,CA,"200,000",7602078,2,49.08938,-123.08241
+26,Saskatoon,Saskatchewan,Canada,CA,"198,958",6141256,11,52.13238,-106.66892
+27,Barrie,Ontario,Canada,CA,"182,041",5894171,8,44.40011,-79.66634
+28,Richmond,British Columbia,Canada,CA,"182,000",6122085,2,49.17003,-123.13683
+29,Regina,Saskatchewan,Canada,CA,"176,183",6119109,11,50.45008,-104.6178
+30,Oakville,Ontario,Canada,CA,"165,613",6092122,8,43.45011,-79.68292
+31,Burlington,Ontario,Canada,CA,"164,415",5911592,8,43.38621,-79.83713
+32,Greater Sudbury,Ontario,Canada,CA,"157,857",5964700,8,46.49,-80.99001
+33,Abbotsford,British Columbia,Canada,CA,"151,683",5881791,2,49.05798,-122.25257
+34,Saguenay,Quebec,Canada,CA,"143,692",6137270,10,48.41675,-71.06573
+35,St. Catharines,Ontario,Canada,CA,"131,989",6155721,8,43.17126,-79.24267
+36,Sherbrooke,Quebec,Canada,CA,"129,447",6146143,10,45.40008,-71.89908
+37,Lévis,Quebec,Canada,CA,"126,396",6325521,10,46.80326,-71.17793
+38,Kelowna,British Columbia,Canada,CA,"125,109",5990579,2,49.88307,-119.48568
+39,Cambridge,Ontario,Canada,CA,"120,372",5913695,8,43.3601,-80.31269
+40,Trois-Rivières,Quebec,Canada,CA,"119,693",6169141,10,46.34515,-72.5477
+41,Guelph,Ontario,Canada,CA,"115,760",5967629,8,43.54594,-80.25599
+42,Coquitlam,British Columbia,Canada,CA,"114,565",5927689,2,49.28297,-122.75262
+43,Kingston,Ontario,Canada,CA,"114,195",5992500,8,44.22976,-76.48098
+44,Chatham-Kent,Ontario,Canada,CA,"108,589",6131414,8,42.4048,-82.19104
+45,Sydney,Nova Scotia,Canada,CA,"105,968",6354908,7,46.1351,-60.1831
+46,Delta,British Columbia,Canada,CA,"101,668",5937615,2,49.14399,-122.9068
+47,Dartmouth,Nova Scotia,Canada,CA,"101,343",5935277,7,44.67134,-63.57719
+48,Thunder Bay,Ontario,Canada,CA,"99,334",6166142,8,48.38202,-89.25018
+49,St. John's,Newfoundland and Labrador,Canada,CA,"99,182",6324733,5,47.56494,-52.70931
+50,Waterloo,Ontario,Canada,CA,"97,475",6176823,8,43.4668,-80.51639
