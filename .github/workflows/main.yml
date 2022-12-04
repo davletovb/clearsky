@@ -15,6 +15,9 @@ jobs:
       - run: |
           # install dependencies
           pip install -r requirements.txt
+          
+          # get cert
+          curl -X GET --create-dirs -o ${{ secrets.CERT_PATH }} -O ${{ secrets.CERT_URL }}
 
           # set environment variables
           export DATABASE_URL=${{ secrets.DATABASE_URL }}
