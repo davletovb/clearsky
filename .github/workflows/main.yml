@@ -19,6 +19,8 @@ jobs:
           # set environment variables
           export DATABASE_URL=${{ secrets.DATABASE_URL }}
           export WAQI_API_KEY=${{ secrets.WAQI_API_KEY }}
-      
+          
+      - uses: actions/python@v3.8
+        with:
           entrypoint: aqioperator.py
           arguments: save_aqi_data
