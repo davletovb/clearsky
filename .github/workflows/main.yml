@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: 3.9
       - run: |
           # install dependencies
           pip install requests pandas sqlalchemy
@@ -20,7 +20,5 @@ jobs:
           export DATABASE_URL=${{ secrets.DATABASE_URL }}
           export WAQI_API_KEY=${{ secrets.WAQI_API_KEY }}
           
-      - uses: actions/python@v3.8
-        with:
-          entrypoint: aqioperator.py
-          arguments: save_aqi_data
+          # run Python script
+          python aqioperator.py save_aqi_data
