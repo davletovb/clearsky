@@ -20,7 +20,7 @@ jobs:
           export DATABASE_URL=${secrets.DATABASE_URL}
           export WAQI_API_KEY=${secrets.WAQI_API_KEY}
       
-      - uses: actions/python@v2
+      - uses: actions/python@v4
         with:
           entrypoint: aqioperator.py
           arguments: save_aqi_data
