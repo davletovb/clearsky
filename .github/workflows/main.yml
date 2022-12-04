@@ -14,7 +14,7 @@ jobs:
           python-version: 3.8
       - run: |
           # install dependencies
-          pip install requests sqlalchemy
+          pip install requests pandas sqlalchemy
 
           # set environment variables
           export DATABASE_URL=${secrets.DATABASE_URL}
