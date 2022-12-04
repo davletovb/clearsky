@@ -221,3 +221,9 @@ class AQIOperator:
             self.session.commit()
         # Close the session
         self.session.close()
+
+
+# main function to run the script
+if __name__ == "__main__":
+    aqi_operator = AQIOperator()
+    aqi_operator.save_aqi_data()
