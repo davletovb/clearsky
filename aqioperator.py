@@ -29,6 +29,9 @@ class AQIOperator:
         # get list of cities
         self.cities = pd.read_csv('cities.csv')
 
+    def get_cities(self):
+        return self.cities
+
     def daily_data(self, data):
         # Extract the data for the new day and add it to the dictionary
         # This is needed because the keys from the API can change from day to day
@@ -176,15 +179,17 @@ class AQIOperator:
         self.session.close()
         return city
 
-    def save_aqi_forecast_by_city(self, city_name, forecast_data, model_name):
+    def save_aqi_forecast_by_city(self, city_name, forecast_data, model_name="ARIMA"):
         # save aqi forecast data for city
         city = self.session.query(City).filter(
             City.city_name == city_name).first()
         model = self.session.query(ModelFiles).filter(
             ModelFiles.model_name == model_name).first()
         if city and model:
+            print("Saving forecast data for city and model: {} and {}".format(
+                city_name, model_name))
             aqi_forecast = self.session.query(AQIForecast).filter(
-                AQIForecast.city_id == city.id, AQIForecast.timestamp_local == datetime.fromisoformat(forecast_data['timestamp_local'])).first()
+                AQIForecast.city_id == city.id, AQIForecast.timestamp_local == datetime.fromisoformat(forecast_data['timestamp_local']), AQIForecast.model_id == model.id).first()
             if not aqi_forecast:
                 aqi_forecast = AQIForecast(
                     city_id=city.id, model_id=model.id, aqi=forecast_data['aqi'], timestamp_local=datetime.fromisoformat(forecast_data['timestamp_local']))
@@ -203,12 +208,12 @@ class AQIOperator:
             model_files = self.session.query(ModelFiles).filter(
                 ModelFiles.city_id == city.id).all()
             if model_files:
-                city.model_file = model_files
+                city.model_files = model_files
 
         self.session.close()
         return city
 
-    def save_model_file_by_city(self, city_name, model_name, model_parameters, model_file):
+    def save_model_file_by_city(self, city_name, model_name="ARIMA", model_parameters=None, model_file=None, model_path=None):
         # save model file for city
         city = self.session.query(City).filter(
             City.city_name == city_name).first()
@@ -218,7 +223,7 @@ class AQIOperator:
                 ModelFiles.city_id == city.id, ModelFiles.model_name == model_name).first()
             if not model:
                 model = ModelFiles(
-                    city_id=city.id, model_name=model_name, model_parameters=model_parameters, model_file=model_file, model_date=datetime.now())
+                    city_id=city.id, model_name=model_name, model_parameters=model_parameters, model_path=model_path, model_file=model_file, model_date=datetime.now())
                 # add model file object to session
                 self.session.add(model)
                 # commit changes to database
@@ -232,3 +237,4 @@ class AQIOperator:
                 self.session.commit()
 
         self.session.close()
+        return model

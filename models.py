@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, BLOB, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -57,5 +57,6 @@ class ModelFiles(Base):
     city_id = Column(Integer, ForeignKey('cities.id'))
     model_name = Column(String)
     model_parameters = Column(JSON)
-    model_file = Column(JSON)
+    model_file = Column(BLOB)
+    model_path = Column(String)
     model_date = Column(DateTime)

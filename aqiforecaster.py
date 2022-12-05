@@ -97,20 +97,23 @@ class ARIMAForecaster(TimeSeriesForecaster):
             Self.
         """
         from statsmodels.tsa.arima.model import ARIMA as ARIMA_model
-        self.model = ARIMA_model(X, order=self.params['order'])
+        self.model = ARIMA_model(X, **self.params)
         self.model = self.model.fit()
         return self
 
-    def predict(self, X):
-        """Predict output for given input data.
+    def predict(self, X, n_periods):
+        """
+        Predict output for given input data for n periods.
 
         Args:
             X: Input data.
+            n_periods: Number of periods to predict.
 
         Returns:
             Predicted output.
         """
-        predictions = self.model.predict(start=len(X), end=len(X)+6)
+        predictions = self.model.predict(
+            start=len(X), end=len(X)+n_periods-1)
 
         return predictions
 
@@ -244,6 +247,6 @@ class ExponentialSmoothingForecaster(TimeSeriesForecaster):
         Returns:
             Predicted output.
         """
-        # Predict the next n days
+        # Predict the next 7 days
         predictions = self.model.predict(n)
         return predictions
