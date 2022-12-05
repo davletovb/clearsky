@@ -1,5 +1,4 @@
 requests
-json
 pandas
 psycopg2-binary
 sqlalchemy
