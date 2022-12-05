@@ -186,8 +186,6 @@ class AQIOperator:
         model = self.session.query(ModelFiles).filter(
             ModelFiles.model_name == model_name).first()
         if city and model:
-            print("Saving forecast data for city and model: {} and {}".format(
-                city_name, model_name))
             aqi_forecast = self.session.query(AQIForecast).filter(
                 AQIForecast.city_id == city.id, AQIForecast.timestamp_local == datetime.fromisoformat(forecast_data['timestamp_local']), AQIForecast.model_id == model.id).first()
             if not aqi_forecast:
