@@ -14,7 +14,7 @@ jobs:
           python-version: 3.9
       - run: |
           # install dependencies
-          pip install -r requirements.txt
+          pip install requests pandas psycopg2-binary sqlalchemy sqlalchemy-cockroachdb
           
           # get cert
           curl -X GET --create-dirs -o ${{ secrets.CERT_PATH }} -O ${{ secrets.CERT_URL }}
