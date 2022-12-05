@@ -24,4 +24,4 @@ jobs:
           export WAQI_API_KEY=${{ secrets.WAQI_API_KEY }}
           
           # run Python script
-          python aqioperator.py
+          python save_daily_data.py
