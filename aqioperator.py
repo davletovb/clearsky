@@ -120,21 +120,20 @@ class AQIOperator:
                 # commit changes to database
                 self.session.commit()
 
-        # Close the session
         self.session.close()
         print("Done")
 
     def get_aqi_data_all(self):
         # get all aqi data
         aqi_data = self.session.query(AQIData).all()
-        # Close the session
+
         self.session.close()
         return aqi_data
 
     def get_all_cities(self):
         # get all cities
         cities = self.session.query(City).all()
-        # Close the session
+
         self.session.close()
         return cities
 
@@ -147,7 +146,7 @@ class AQIOperator:
                 AQIData.city_id == city.id).all()
             if aqi_data:
                 city.aqi_data = aqi_data
-        # Close the session
+
         self.session.close()
         return city
 
@@ -160,7 +159,7 @@ class AQIOperator:
                 AQIData.city_id == city.id).all()
             if aqi_data:
                 city.aqi_data = aqi_data
-        # Close the session
+
         self.session.close()
         return city
 
@@ -169,30 +168,31 @@ class AQIOperator:
         city = self.session.query(City).filter(
             City.city_name == city_name).first()
         if city:
-            aqi_forecast = self.session.query(AQIForecast).filter(
+            aqi_forecasts = self.session.query(AQIForecast).filter(
                 AQIForecast.city_id == city.id).all()
-            if aqi_forecast:
-                city.aqi_forecast = aqi_forecast
-        # Close the session
+            if aqi_forecasts:
+                city.aqi_forecasts = aqi_forecasts
+
         self.session.close()
         return city
 
-    def save_aqi_forecast_by_city(self, city_name, forecast_data):
-        # get aqi data for city
+    def save_aqi_forecast_by_city(self, city_name, forecast_data, model_name):
+        # save aqi forecast data for city
         city = self.session.query(City).filter(
             City.city_name == city_name).first()
-        if city:
-            for data in forecast_data:
-                aqi_forecast = self.session.query(AQIForecast).filter(
-                    AQIForecast.city_id == city.id, AQIForecast.timestamp_local == datetime.fromisoformat(data['timestamp_local'])).first()
-                if not aqi_forecast:
-                    aqi_forecast = AQIForecast(
-                        city_id=city.id, aqi=data['aqi'], timestamp_local=datetime.fromisoformat(data['timestamp_local']))
-                    # add aqi data object to session
-                    self.session.add(aqi_forecast)
-                    # commit changes to database
-                    self.session.commit()
-        # Close the session
+        model = self.session.query(ModelFiles).filter(
+            ModelFiles.model_name == model_name).first()
+        if city and model:
+            aqi_forecast = self.session.query(AQIForecast).filter(
+                AQIForecast.city_id == city.id, AQIForecast.timestamp_local == datetime.fromisoformat(forecast_data['timestamp_local'])).first()
+            if not aqi_forecast:
+                aqi_forecast = AQIForecast(
+                    city_id=city.id, model_id=model.id, aqi=forecast_data['aqi'], timestamp_local=datetime.fromisoformat(forecast_data['timestamp_local']))
+                # add aqi data object to session
+                self.session.add(aqi_forecast)
+                # commit changes to database
+                self.session.commit()
+
         self.session.close()
 
     def get_model_file_by_city(self, city_name):
@@ -204,26 +204,31 @@ class AQIOperator:
                 ModelFiles.city_id == city.id).all()
             if model_files:
                 city.model_file = model_files
-        # Close the session
+
         self.session.close()
         return city
 
-    def save_model_file_by_city(self, city_name, model_file):
+    def save_model_file_by_city(self, city_name, model_name, model_parameters, model_file):
         # save model file for city
         city = self.session.query(City).filter(
             City.city_name == city_name).first()
         if city:
-            model_file = ModelFiles(
-                city_id=city.id, file=model_file, file_name=model_file, file_date=datetime.now())
-            # add model file object to session
-            self.session.add(model_file)
-            # commit changes to database
-            self.session.commit()
-        # Close the session
+            # create model file object if it doesn't exist
+            model = self.session.query(ModelFiles).filter(
+                ModelFiles.city_id == city.id, ModelFiles.model_name == model_name).first()
+            if not model:
+                model = ModelFiles(
+                    city_id=city.id, model_name=model_name, model_parameters=model_parameters, model_file=model_file, model_date=datetime.now())
+                # add model file object to session
+                self.session.add(model)
+                # commit changes to database
+                self.session.commit()
+            else:
+                # if model file exists, update model file
+                model.model_parameters = model_parameters
+                model.model_file = model_file
+                model.model_date = datetime.now()
+                # commit changes to database
+                self.session.commit()
+
         self.session.close()
-
-
-# main function to run the script
-if __name__ == "__main__":
-    aqi_operator = AQIOperator()
-    aqi_operator.save_aqi_data()

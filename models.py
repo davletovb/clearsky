@@ -15,7 +15,7 @@ class City(Base):
     lon = Column(Float)
 
     aqi_data = relationship('AQIData')
-    aqi_forecast = relationship('AQIForecast')
+    aqi_forecasts = relationship('AQIForecast')
     model_files = relationship('ModelFiles')
 
 
@@ -41,10 +41,11 @@ class AQIData(Base):
 
 
 class AQIForecast(Base):
-    __tablename__ = 'aqi_forecast'
+    __tablename__ = 'aqi_forecasts'
 
     id = Column(Integer, primary_key=True)
     city_id = Column(Integer, ForeignKey('cities.id'))
+    model_id = Column(Integer, ForeignKey('model_files.id'))
     aqi = Column(Float)
     timestamp_local = Column(DateTime)
 
@@ -54,6 +55,7 @@ class ModelFiles(Base):
 
     id = Column(Integer, primary_key=True)
     city_id = Column(Integer, ForeignKey('cities.id'))
-    file = Column(JSON)
-    file_name = Column(String)
-    file_date = Column(DateTime)
+    model_name = Column(String)
+    model_parameters = Column(JSON)
+    model_file = Column(JSON)
+    model_date = Column(DateTime)
