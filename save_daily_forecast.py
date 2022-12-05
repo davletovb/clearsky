@@ -35,7 +35,7 @@ def get_forecast(city_name, forecast_length):
     data = get_history_data(city_name)
     # get aqi forecast
     model_params = {
-        'order': (1, 1, 1)
+        'order': (1, 0, 1)
     }
 
     forecaster = ARIMAForecaster(model_params)
