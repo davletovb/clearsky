@@ -124,7 +124,6 @@ class AQIOperator:
                 self.session.commit()
 
         self.session.close()
-        print("Done")
 
     def get_aqi_data_all(self):
         # get all aqi data
@@ -152,6 +151,19 @@ class AQIOperator:
 
         self.session.close()
         return city
+
+    def get_aqi_dataframe(self, city_name):
+        data = self.get_aqi_data_by_city(city_name)
+        #df = pd.DataFrame([aqi.__dict__ for aqi in data.aqi_data])
+        #df = df.drop(columns=['_sa_instance_state'])
+        df = pd.DataFrame([{'city_id': aqi.city_id, 'aqi': aqi.aqi, 'co': aqi.co, 'dew': aqi.dew, 'h': aqi.h, 'no2': aqi.no2, 'o3': aqi.o3, 'p': aqi.p,
+                            'pm10': aqi.pm10, 'pm25': aqi.pm25, 'so2': aqi.so2, 't': aqi.t, 'w': aqi.w, 'wg': aqi.wg, 'timestamp_local': aqi.timestamp_local} for aqi in data.aqi_data])
+        df['timestamp_local'] = pd.to_datetime(df['timestamp_local'])
+        # sort by timestamp local ascending order and reset index
+        df = df.sort_values(by=['timestamp_local'], ascending=True)
+        df = df.reset_index(drop=True)
+
+        return df
 
     def get_aqi_data_by_lat_lon(self, lat, lon):
         # get aqi data for city
@@ -189,8 +201,6 @@ class AQIOperator:
         model = self.session.query(ModelFiles).filter(
             ModelFiles.model_name == model_name).first()
         if city and model:
-            print("Saving forecast data for city and model: {} and {}".format(
-                city_name, model_name))
             aqi_forecast = self.session.query(AQIForecast).filter(
                 AQIForecast.city_id == city.id, AQIForecast.timestamp_local == datetime.fromisoformat(forecast_data['timestamp_local']), AQIForecast.model_id == model.id).first()
             if not aqi_forecast:

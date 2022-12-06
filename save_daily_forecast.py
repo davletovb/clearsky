@@ -13,12 +13,8 @@ def get_history_data(city_name):
         Historical aqi data and timestamps for the city as a pandas dataframe.
     """
     aqi_operator = AQIOperator()
-    data = aqi_operator.get_aqi_data_by_city(city_name)
-    # convert aqi data to pandas dataframe
-    data = pd.DataFrame([{'city_id': aqi.city_id, 'aqi': aqi.aqi, 'co': aqi.co, 'dew': aqi.dew, 'h': aqi.h, 'no2': aqi.no2, 'o3': aqi.o3, 'p': aqi.p,
-                        'pm10': aqi.pm10, 'pm25': aqi.pm25, 'so2': aqi.so2, 't': aqi.t, 'w': aqi.w, 'wg': aqi.wg, 'timestamp_local': aqi.timestamp_local} for aqi in data.aqi_data])
-    # convert timestamp column to datetime
-    data['timestamp_local'] = pd.to_datetime(data['timestamp_local'])
+
+    data = aqi_operator.get_aqi_dataframe(city_name)
 
     return data
 
@@ -40,11 +36,9 @@ def get_forecast(city_name, forecast_length):
 
     forecaster = ARIMAForecaster(model_params)
 
-    data = forecaster.prepare_data(data)
-
     forecaster.fit(data)
 
-    forecasts = forecaster.predict(data, forecast_length)
+    forecasts = forecaster.predict(forecast_length)
 
     # convert forecasts to json with timestamp_local and aqi as column names
     forecasts = forecasts.reset_index()

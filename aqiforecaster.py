@@ -61,6 +61,7 @@ class ARIMAForecaster(TimeSeriesForecaster):
         """
         super().__init__(params)
         self.model = None
+        self.X = None
 
     def prepare_data(self, data):
         """Prepare data for training and prediction.
@@ -84,9 +85,11 @@ class ARIMAForecaster(TimeSeriesForecaster):
         # Return the AQI values, ARIMA model does not need the other columns
         X = data['aqi']
 
+        self.X = X
+
         return X
 
-    def fit(self, X):
+    def fit(self, data):
         """Fit ARIMA model to training data.
 
         Args:
@@ -97,11 +100,12 @@ class ARIMAForecaster(TimeSeriesForecaster):
             Self.
         """
         from statsmodels.tsa.arima.model import ARIMA as ARIMA_model
+        X = self.prepare_data(data)
         self.model = ARIMA_model(X, **self.params)
         self.model = self.model.fit()
         return self
 
-    def predict(self, X, n_periods):
+    def predict(self, n_periods):
         """
         Predict output for given input data for n periods.
 
@@ -113,7 +117,7 @@ class ARIMAForecaster(TimeSeriesForecaster):
             Predicted output.
         """
         predictions = self.model.predict(
-            start=len(X), end=len(X)+n_periods-1)
+            start=len(self.X), end=len(self.X)+n_periods-1)
 
         return predictions
 
@@ -129,6 +133,10 @@ class XGBoostForecaster(TimeSeriesForecaster):
         """
         super().__init__(params)
         self.model = None
+        self.X_train = None
+        self.y_train = None
+        self.X_test = None
+        self.y_test = None
 
     def prepare_data(self, data):
         """Prepare data for training and prediction.
@@ -157,9 +165,18 @@ class XGBoostForecaster(TimeSeriesForecaster):
         train = train.dropna()
         test = test.dropna()
 
-        return train, test
+        # Split the train and test samples into X and y
+        train_X, train_y = train.drop('aqi', axis=1), train['aqi']
+        test_X, test_y = test.drop('aqi', axis=1), test['aqi']
 
-    def fit(self, X, y):
+        self.X_train = train_X
+        self.y_train = train_y
+        self.X_test = test_X
+        self.y_test = test_y
+
+        return train_X, train_y, test_X, test_y
+
+    def fit(self, data):
         """Fit XGBoost model to training data.
 
         Args:
@@ -171,19 +188,21 @@ class XGBoostForecaster(TimeSeriesForecaster):
         """
         from xgboost import XGBRegressor
         self.model = XGBRegressor(**self.params)
+        X, y, _, _ = self.prepare_data(data)
         self.model.fit(X, y)
         return self
 
-    def predict(self, X):
+    def predict(self, n_periods):
         """Predict output for given input data.
 
         Args:
             X: Input data.
+            n_periods: Number of periods to predict.
 
         Returns:
             Predicted output.
         """
-        return self.model.predict(X)
+        return self.model.predict(self.X_test)
 
 
 class ExponentialSmoothingForecaster(TimeSeriesForecaster):
@@ -197,6 +216,7 @@ class ExponentialSmoothingForecaster(TimeSeriesForecaster):
         """
         super().__init__(params)
         self.model = None
+        self.X = None
 
     def prepare_data(self, data):
         """Prepare data for training and prediction.
@@ -217,12 +237,13 @@ class ExponentialSmoothingForecaster(TimeSeriesForecaster):
         # resample data to daily frequency
         data = data.resample('D').mean()
 
-        # Return the AQI values, ARIMA model does not need the other columns
         X = data['aqi']
+
+        self.X = X
 
         return X
 
-    def fit(self, X):
+    def fit(self, data):
         """Fit exponential smoothing model to training data.
 
         Args:
@@ -233,6 +254,7 @@ class ExponentialSmoothingForecaster(TimeSeriesForecaster):
             Self.
         """
         from statsmodels.tsa.holtwinters import ExponentialSmoothing as ExponentialSmoothing_model
+        X = self.prepare_data(data)
         self.model = ExponentialSmoothing_model(
             X, **self.params)
         self.model = self.model.fit()
@@ -247,6 +269,6 @@ class ExponentialSmoothingForecaster(TimeSeriesForecaster):
         Returns:
             Predicted output.
         """
-        # Predict the next 7 days
+        # Predict the next n days
         predictions = self.model.predict(n)
         return predictions
