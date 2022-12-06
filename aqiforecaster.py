@@ -234,7 +234,7 @@ class ExponentialSmoothingForecaster(TimeSeriesForecaster):
         """
         from statsmodels.tsa.holtwinters import ExponentialSmoothing as ExponentialSmoothing_model
         self.model = ExponentialSmoothing_model(
-            X, trend=self.params['trend'], seasonal_periods=self.params['seasonal_periods'])
+            X, **self.params)
         self.model = self.model.fit()
         return self
 

@@ -1,4 +1,4 @@
-# a class and methods to save daily AQI data to a database
+# This class is for all data management operations
 from models import City, AQIData, AQIForecast, ModelFiles, Base
 import os
 import pandas as pd
@@ -166,15 +166,18 @@ class AQIOperator:
         self.session.close()
         return city
 
-    def get_aqi_forecast_by_city(self, city_name):
+    def get_aqi_forecast_by_city(self, city_name, model_name="ARIMA"):
         # get aqi data for city
         city = self.session.query(City).filter(
             City.city_name == city_name).first()
         if city:
-            aqi_forecasts = self.session.query(AQIForecast).filter(
-                AQIForecast.city_id == city.id).all()
-            if aqi_forecasts:
-                city.aqi_forecasts = aqi_forecasts
+            model = self.session.query(ModelFiles).filter(
+                ModelFiles.model_name == model_name).first()
+            if model:
+                aqi_forecasts = self.session.query(AQIForecast).filter(
+                    AQIForecast.city_id == city.id, AQIForecast.model_id == model.id).all()
+                if aqi_forecasts:
+                    city.aqi_forecasts = aqi_forecasts
 
         self.session.close()
         return city
@@ -186,6 +189,8 @@ class AQIOperator:
         model = self.session.query(ModelFiles).filter(
             ModelFiles.model_name == model_name).first()
         if city and model:
+            print("Saving forecast data for city and model: {} and {}".format(
+                city_name, model_name))
             aqi_forecast = self.session.query(AQIForecast).filter(
                 AQIForecast.city_id == city.id, AQIForecast.timestamp_local == datetime.fromisoformat(forecast_data['timestamp_local']), AQIForecast.model_id == model.id).first()
             if not aqi_forecast:
