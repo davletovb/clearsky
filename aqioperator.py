@@ -156,8 +156,10 @@ class AQIOperator:
         data = self.get_aqi_data_by_city(city_name)
         #df = pd.DataFrame([aqi.__dict__ for aqi in data.aqi_data])
         #df = df.drop(columns=['_sa_instance_state'])
-        df = pd.DataFrame([{'city_id': aqi.city_id, 'aqi': aqi.aqi, 'co': aqi.co, 'dew': aqi.dew, 'h': aqi.h, 'no2': aqi.no2, 'o3': aqi.o3, 'p': aqi.p,
-                            'pm10': aqi.pm10, 'pm25': aqi.pm25, 'so2': aqi.so2, 't': aqi.t, 'w': aqi.w, 'wg': aqi.wg, 'timestamp_local': aqi.timestamp_local} for aqi in data.aqi_data])
+        # df = pd.DataFrame([{'city_id': aqi.city_id, 'aqi': aqi.aqi, 'co': aqi.co, 'dew': aqi.dew, 'h': aqi.h, 'no2': aqi.no2, 'o3': aqi.o3, 'p': aqi.p,
+        #                    'pm10': aqi.pm10, 'pm25': aqi.pm25, 'so2': aqi.so2, 't': aqi.t, 'w': aqi.w, 'wg': aqi.wg, 'timestamp_local': aqi.timestamp_local} for aqi in data.aqi_data])
+        df = pd.DataFrame(
+            [{'aqi': aqi.aqi, 'timestamp_local': aqi.timestamp_local} for aqi in data.aqi_data])
         df['timestamp_local'] = pd.to_datetime(df['timestamp_local'])
         # sort by timestamp local ascending order and reset index
         df = df.sort_values(by=['timestamp_local'], ascending=True)

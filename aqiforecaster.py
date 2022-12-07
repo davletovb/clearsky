@@ -116,10 +116,22 @@ class ARIMAForecaster(TimeSeriesForecaster):
         Returns:
             Predicted output.
         """
-        predictions = self.model.predict(
+        import json
+
+        forecasts = self.model.predict(
             start=len(self.X), end=len(self.X)+n_periods-1)
 
-        return predictions
+        # convert forecasts to json with timestamp_local and aqi as column names
+        forecasts = forecasts.reset_index()
+        forecasts = forecasts.rename(
+            columns={'index': 'timestamp_local', 'predicted_mean': 'aqi', 0: 'aqi'})
+        forecasts['timestamp_local'] = forecasts['timestamp_local'].dt.strftime(
+            '%Y-%m-%d')
+
+        # convert forecasts to json
+        forecasts = json.loads(forecasts.to_json(orient='records'))
+
+        return forecasts
 
 
 class XGBoostForecaster(TimeSeriesForecaster):
@@ -133,10 +145,9 @@ class XGBoostForecaster(TimeSeriesForecaster):
         """
         super().__init__(params)
         self.model = None
-        self.X_train = None
-        self.y_train = None
-        self.X_test = None
-        self.y_test = None
+        self.X = None
+        self.y = None
+        self.last_date = None
 
     def prepare_data(self, data):
         """Prepare data for training and prediction.
@@ -147,34 +158,27 @@ class XGBoostForecaster(TimeSeriesForecaster):
         Returns:
             Prepared data.
         """
+        import pandas as pd
         # Drop NaN values
         data.dropna(inplace=True)
 
         # Set the index to timestamp column if it is not already
-        if data.index.name != 'timestamp_local':
-            data.set_index('timestamp_local', inplace=True)
+        # if data.index.name != 'timestamp_local':
+        #    data.set_index('timestamp_local', inplace=True)
 
         # Resample the data to a daily frequency
-        data = data.resample('D').mean()
+        #data = data.resample('D').mean()
 
-        # Split the train and test samples 80%:20%
-        train_size = int(len(data) * 0.8)
-        train, test = data[0:train_size], data[train_size:len(data)]
+        X = data.drop('aqi', axis=1)
+        # convert timestamp_local to integer
+        self.last_date = X['timestamp_local'].iloc[-1]
+        X['timestamp_local'] = pd.to_numeric(X['timestamp_local'])
+        y = data['aqi']
 
-        # Drop missing values
-        train = train.dropna()
-        test = test.dropna()
+        self.X = X
+        self.y = y
 
-        # Split the train and test samples into X and y
-        train_X, train_y = train.drop('aqi', axis=1), train['aqi']
-        test_X, test_y = test.drop('aqi', axis=1), test['aqi']
-
-        self.X_train = train_X
-        self.y_train = train_y
-        self.X_test = test_X
-        self.y_test = test_y
-
-        return train_X, train_y, test_X, test_y
+        return X, y
 
     def fit(self, data):
         """Fit XGBoost model to training data.
@@ -187,9 +191,18 @@ class XGBoostForecaster(TimeSeriesForecaster):
             Self.
         """
         from xgboost import XGBRegressor
+        import xgboost as xgb
+
         self.model = XGBRegressor(**self.params)
-        X, y, _, _ = self.prepare_data(data)
+
+        #X, y, _, _ = self.prepare_data(data)
+        X, y = self.prepare_data(data)
+
+        # X = xgb.DMatrix(data=data.drop('aqi', axis=1), label=data['aqi'], feature_names=data.drop(
+        #    'aqi', axis=1).columns, enable_categorical=True)
+
         self.model.fit(X, y)
+
         return self
 
     def predict(self, n_periods):
@@ -202,7 +215,33 @@ class XGBoostForecaster(TimeSeriesForecaster):
         Returns:
             Predicted output.
         """
-        return self.model.predict(self.X_test)
+        import datetime
+        import pandas as pd
+
+        # create a list of dates from the last date in the dataset to the next n days
+        future_dates = [
+            self.last_date + datetime.timedelta(days=x) for x in range(0, n_periods)]
+
+        future_data = pd.DataFrame()
+
+        # add the dates to the dataframe
+        future_data['timestamp_local'] = [date for date in future_dates]
+        future_data.sort_values(
+            'timestamp_local', inplace=True, ascending=True)
+        # copy the timestamp_local column to a new list to be used later
+        future_timestamps = future_data['timestamp_local'].copy()
+        future_data['timestamp_local'] = pd.to_numeric(
+            future_data['timestamp_local'])
+
+        forecasts = self.model.predict(future_data)
+
+        # convert forecasts to json with timestamp_local and aqi as column names
+        forecasts = pd.DataFrame(forecasts)
+        forecasts = forecasts.rename(
+            columns={0: 'aqi'})
+        forecasts['timestamp_local'] = future_timestamps
+
+        return forecasts
 
 
 class ExponentialSmoothingForecaster(TimeSeriesForecaster):
@@ -269,6 +308,19 @@ class ExponentialSmoothingForecaster(TimeSeriesForecaster):
         Returns:
             Predicted output.
         """
+        import json
+
         # Predict the next n days
-        predictions = self.model.predict(n)
-        return predictions
+        forecasts = self.model.predict(len(self.X), len(self.X)+n-1)
+
+        # convert forecasts to json with timestamp_local and aqi as column names
+        forecasts = forecasts.reset_index()
+        forecasts = forecasts.rename(
+            columns={'index': 'timestamp_local', 'predicted_mean': 'aqi', 0: 'aqi'})
+        forecasts['timestamp_local'] = forecasts['timestamp_local'].dt.strftime(
+            '%Y-%m-%d')
+
+        # convert forecasts to json
+        forecasts = json.loads(forecasts.to_json(orient='records'))
+
+        return forecasts

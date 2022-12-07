@@ -179,24 +179,13 @@ def get_forecast(city_name, forecast_length, forecaster, model_params):
     """
     # get historical aqi data
     data = get_history_data(city_name)
-    # get aqi forecast
 
+    # get aqi forecast
     forecaster = get_forecast_model(forecaster, model_params)
 
     forecaster = forecaster.fit(data)
 
     forecasts = forecaster.predict(forecast_length)
-
-    # convert forecasts to json with timestamp_local and aqi as column names
-    forecasts = forecasts.reset_index()
-    forecasts = forecasts.rename(
-        columns={'index': 'timestamp_local', 'predicted_mean': 'aqi', 0: 'aqi'})
-    forecasts['timestamp_local'] = forecasts['timestamp_local'].dt.strftime(
-        '%Y-%m-%d')
-
-    # convert forecasts to json
-    forecasts = json.loads(forecasts.to_json(orient='records'))
-    # forecasts.to_json(orient='records')
 
     return forecasts
 

@@ -5,5 +5,6 @@ sqlalchemy
 sqlalchemy-cockroachdb
 statsmodels
 xgboost
+sklearn
 streamlit
 plotly
