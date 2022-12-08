@@ -40,11 +40,6 @@ def get_history_data(city_name):
     """
     aqi_operator = AQIOperator()
     data = aqi_operator.get_aqi_dataframe(city_name)
-    # convert aqi data to pandas dataframe
-    # data = pd.DataFrame([{'city_id': aqi.city_id, 'aqi': aqi.aqi, 'co': aqi.co, 'dew': aqi.dew, 'h': aqi.h, 'no2': aqi.no2, 'o3': aqi.o3, 'p': aqi.p,
-    #                    'pm10': aqi.pm10, 'pm25': aqi.pm25, 'so2': aqi.so2, 't': aqi.t, 'w': aqi.w, 'wg': aqi.wg, 'timestamp_local': aqi.timestamp_local} for aqi in data.aqi_data])
-    # convert timestamp column to datetime
-    #data['timestamp_local'] = pd.to_datetime(data['timestamp_local'])
 
     return data
 
@@ -97,7 +92,7 @@ def get_forecast_model_params():
 
     forecast_model_params = [
         {'model_name': 'ARIMA', 'default_params': {
-            'order': (1, 0, 1)
+            'order': (1,  1,  1)
         }},
         {'model_name': 'XGBoost', 'default_params': {
             'max_depth': 3, 'n_estimators': 100, 'learning_rate': 0.1}},
@@ -212,6 +207,11 @@ def show_data_and_forecasts(city_name, forecast_length, forecaster, model_params
     forecasts = pd.DataFrame(forecasts)
     forecasts['timestamp_local'] = pd.to_datetime(forecasts['timestamp_local'])
 
+    st.title('ClearSky')
+    st.markdown(
+        'This is a demo app for forecasting air quality index. The data is from [The World AirQuality Project](https://aqicn.org/).')
+    st.markdown('---')
+
     # plot historical aqi data
     fig = px.line(data, x='timestamp_local', y='aqi',
                   title='Historical AQI Data')
@@ -235,28 +235,50 @@ def main():
     # get list of available cities
     cities = get_city_list()
 
-    # set page title
-    st.title('Air Quality Index Forecasting')
-    st.markdown('This is a demo app for forecasting air quality index.')
-    st.markdown(
-        'The data is from [The World AirQuality Project](https://aqicn.org/).')
-    #
-    st.markdown('---')
-    st.markdown('## Forecasting')
-    st.markdown('### Select a city')
-    city_name = st.selectbox('City', cities)
-    st.markdown('### Select a forecast model')
-    forecaster = st.selectbox('Forecast Model', forecast_model_names)
-    st.markdown('### Select forecast length')
-    forecast_length = st.slider('Forecast Length', 1, 7, 3)
-    st.markdown('### Select forecast model parameters')
+    # show a sidebar with the app title and description
+    # st.sidebar.title('ClearSky')
+    #st.sidebar.markdown('This is a demo app for forecasting air quality index. The data is from [The World AirQuality Project](https://aqicn.org/).')
+    # the sidebar will also contain the forecast model, forecast length, and forecast model parameters, etc.
+    # the sidebar will be fixed on the left side of the app
+    # st.sidebar.markdown('---')
+
+    st.sidebar.markdown('## Forecasting')
+    st.sidebar.markdown('### Select a city')
+    city_name = st.sidebar.selectbox('City', cities)
+    st.sidebar.markdown('### Select forecast length')
+    forecast_length = st.sidebar.slider('Forecast Length', 1, 7, 3)
+    st.sidebar.markdown('### Select a model')
+    forecaster = st.sidebar.selectbox('Forecast Model', forecast_model_names)
+    st.sidebar.markdown('### Select model parameters')
     forecast_model_default_params = get_default_params(forecaster)
-    model_params = st.selectbox('Forecast Model Parameters',
-                                forecast_model_default_params)
-    st.markdown('### Forecast')
-    if st.button('Forecast'):
+
+    # show forecast model parameters based on the selected forecast model and allow user to change them
+    # show each element of the dictionary as a text input box with the key as the label
+    model_params = {}
+    for key, value in forecast_model_default_params.items():
+        # check the type of the value
+        if isinstance(value, int):
+            model_params[key] = st.sidebar.number_input(key, value)
+        elif isinstance(value, float):
+            model_params[key] = st.sidebar.number_input(key, value)
+        elif isinstance(value, str):
+            model_params[key] = st.sidebar.text_input(key, value)
+        elif isinstance(value, bool):
+            model_params[key] = st.sidebar.checkbox(key, value)
+        else:
+            model_params[key] = st.sidebar.text_input(key, value)
+
+    model_params = {k: v for k, v in model_params.items() if v != ''}
+
+    # forecast_model_default_params.update(model_params)
+
+    st.sidebar.markdown('### Forecast')
+    if st.sidebar.button('Forecast'):
         show_data_and_forecasts(city_name, forecast_length,
                                 forecaster, forecast_model_default_params)
+
+    # show the main page with the app title and description
+    #show_data_and_forecasts(city_name, forecast_length, forecaster, forecast_model_default_params)
 
 
 if __name__ == '__main__':
