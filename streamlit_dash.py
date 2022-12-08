@@ -207,9 +207,9 @@ def show_data_and_forecasts(city_name, forecast_length, forecaster, model_params
     forecasts = pd.DataFrame(forecasts)
     forecasts['timestamp_local'] = pd.to_datetime(forecasts['timestamp_local'])
 
-    st.title('ClearSky')
+    st.markdown('### Air Quality Index Forecast')
     st.markdown(
-        'This is a demo app for forecasting air quality index. The data is from [The World AirQuality Project](https://aqicn.org/).')
+        'Here is the historical and forecasted air quality index for the next {} days in {}'.format(forecast_length, city_name))
     st.markdown('---')
 
     # plot historical aqi data
@@ -236,20 +236,19 @@ def main():
     cities = get_city_list()
 
     # show a sidebar with the app title and description
-    # st.sidebar.title('ClearSky')
-    #st.sidebar.markdown('This is a demo app for forecasting air quality index. The data is from [The World AirQuality Project](https://aqicn.org/).')
-    # the sidebar will also contain the forecast model, forecast length, and forecast model parameters, etc.
-    # the sidebar will be fixed on the left side of the app
-    # st.sidebar.markdown('---')
+    st.sidebar.title('ClearSky')
+    st.sidebar.markdown(
+        'This is a demo app for forecasting air quality index. The data is from [The World AirQuality Project](https://aqicn.org/).')
+    st.sidebar.markdown('---')
+    # the forecast model options
+    st.sidebar.markdown('## Forecasting Options')
 
-    st.sidebar.markdown('## Forecasting')
-    st.sidebar.markdown('### Select a city')
     city_name = st.sidebar.selectbox('City', cities)
-    st.sidebar.markdown('### Select forecast length')
+
     forecast_length = st.sidebar.slider('Forecast Length', 1, 7, 3)
-    st.sidebar.markdown('### Select a model')
+
     forecaster = st.sidebar.selectbox('Forecast Model', forecast_model_names)
-    st.sidebar.markdown('### Select model parameters')
+    st.sidebar.markdown('Model Parameters')
     forecast_model_default_params = get_default_params(forecaster)
 
     # show forecast model parameters based on the selected forecast model and allow user to change them
@@ -265,20 +264,41 @@ def main():
             model_params[key] = st.sidebar.text_input(key, value)
         elif isinstance(value, bool):
             model_params[key] = st.sidebar.checkbox(key, value)
+        elif isinstance(value, list):
+            # if the value is a list, show each element of the list as a text input box
+            list_params = {}
+            for i, v in enumerate(value):
+                list_params[i] = st.sidebar.text_input(key + ' ' + str(i), v)
+            model_params[key] = list_params
+        elif isinstance(value, dict):
+            # if the value is a dictionary, show each element of the dictionary as a text input box
+            dict_params = {}
+            for k, v in value.items():
+                dict_params[k] = st.sidebar.text_input(key + ' ' + k, v)
+            model_params[key] = dict_params
+        elif isinstance(value, tuple):
+            # if the value is a tuple, show each element of the tuple as a text input box
+            tuple_params = []
+            for i, v in enumerate(value):
+                if isinstance(v, int):
+                    tuple_params.append(st.sidebar.number_input(label=key + ' ' + str(i), value=v, min_value=0))
+                elif isinstance(v, float):
+                    tuple_params.append(st.sidebar.number_input(label=key + ' ' + str(i), value=v, min_value=0.0))
+                elif isinstance(v, str):
+                    tuple_params.append(st.sidebar.text_input(key + ' ' + str(i), v))
+            tuple_params = tuple(tuple_params)
+            model_params[key] = tuple_params
+
         else:
             model_params[key] = st.sidebar.text_input(key, value)
 
     model_params = {k: v for k, v in model_params.items() if v != ''}
 
-    # forecast_model_default_params.update(model_params)
+    forecast_model_default_params.update(model_params)
 
-    st.sidebar.markdown('### Forecast')
-    if st.sidebar.button('Forecast'):
+    if st.sidebar.button('Show Forecast'):
         show_data_and_forecasts(city_name, forecast_length,
                                 forecaster, forecast_model_default_params)
-
-    # show the main page with the app title and description
-    #show_data_and_forecasts(city_name, forecast_length, forecaster, forecast_model_default_params)
 
 
 if __name__ == '__main__':
