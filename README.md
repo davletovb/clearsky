@@ -5,13 +5,21 @@ You can access the dashboard through this link: [ClearSky Dashboard](https://cle
 
 
 To install these requirements, run this:
-
+```
 pip install -r requirements.txt
+```
 
-There are two parameters that needs to be set inside aqioperator.py
+There are two environment variables that needs to be set:
 
-DATABASE_URL:
-It can be set to 'sqlite:///db.db' to run locally. The project is currently using CockroachDB cloud, but it was tested with SQLite as well.
+```
+export DATABASE_URL="DATABASE_URL"
+```
 
-WAQI_API_KEY:
+The project is currently using CockroachDB cloud, but it was tested with SQLite as well.
+
+```
+export WAQI_API_KEY="WAQI_API_KEY"
+```
+
 The data is from The World Air Quality Project. API key for data can be requested and obtained from https://aqicn.org/data-platform/token/ for free.
+

@@ -1,16 +1,12 @@
 # Streamlit dashboard for AQI forecasting, using various models and parameters.
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import json
 
 from aqiforecaster import ARIMAForecaster
 from aqiforecaster import XGBoostForecaster
 from aqiforecaster import ExponentialSmoothingForecaster
 from aqioperator import AQIOperator
-
-# import data
 
 
 def get_city_list():
@@ -44,7 +40,7 @@ def get_history_data(city_name):
     return data
 
 
-def get_forecasted_data(city_name, forecast_model):
+def get_daily_forecasted_data(city_name, forecast_model='ARIMA'):
     """
     Get forecasted aqi data from database.
     Args:
@@ -92,7 +88,7 @@ def get_forecast_model_params():
 
     forecast_model_params = [
         {'model_name': 'ARIMA', 'default_params': {
-            'order': (1,  1,  1)
+            'order': (1,  0,  1)
         }},
         {'model_name': 'XGBoost', 'default_params': {
             'max_depth': 3, 'n_estimators': 100, 'learning_rate': 0.1}},
@@ -198,28 +194,37 @@ def show_data_and_forecasts(city_name, forecast_length, forecaster, model_params
         None
     """
     # get historical aqi data
-    data = get_history_data(city_name)
+    history_data = get_history_data(city_name)
+
+    # get daily forecasted data
+    history_forecasts = get_daily_forecasted_data(city_name)
+
     # get aqi forecast
-    forecasts = get_forecast(city_name, forecast_length,
-                             forecaster, model_params)
+    future_forecasts = get_forecast(city_name, forecast_length,
+                                    forecaster, model_params)
 
     # convert forecasts to dataframe with timestamp_local and aqi as column names
-    forecasts = pd.DataFrame(forecasts)
-    forecasts['timestamp_local'] = pd.to_datetime(forecasts['timestamp_local'])
+    future_forecasts = pd.DataFrame(future_forecasts)
+    future_forecasts['timestamp_local'] = pd.to_datetime(
+        future_forecasts['timestamp_local'])
 
     st.markdown('### Air Quality Index Forecast')
     st.markdown(
         'Here is the historical and forecasted air quality index for the next {} days in {}'.format(forecast_length, city_name))
     st.markdown('---')
 
-    # plot historical aqi data
-    fig = px.line(data, x='timestamp_local', y='aqi',
-                  title='Historical AQI Data')
+    # plot historical aqi data and forecasted aqi data on the same chart, with different colors
+    fig = px.line(history_data, x='timestamp_local', y='aqi',
+                  title='Historical AQI Data', labels={'timestamp_local': 'Date', 'aqi': 'AQI'}, height=500, width=800)
+    fig.add_scatter(x=history_forecasts['timestamp_local'], y=history_forecasts['aqi'],
+                    mode='lines', name='Forecasted AQI Data', line=dict(color='red'))
+    fig.add_scatter(x=future_forecasts['timestamp_local'], y=future_forecasts['aqi'],
+                    mode='markers', name='Future Forecasted AQI Data', line=dict(color='red'))
     st.plotly_chart(fig)
 
     # plot forecasted aqi data
-    fig = px.line(forecasts, x='timestamp_local', y='aqi',
-                  title='Forecasted AQI Data')
+    fig = px.line(future_forecasts, x='timestamp_local', y='aqi',
+                  title='Future Forecasted AQI Data', labels={'timestamp_local': 'Date', 'aqi': 'AQI'})
     st.plotly_chart(fig)
 
 
@@ -281,11 +286,14 @@ def main():
             tuple_params = []
             for i, v in enumerate(value):
                 if isinstance(v, int):
-                    tuple_params.append(st.sidebar.number_input(label=key + ' ' + str(i), value=v, min_value=0))
+                    tuple_params.append(st.sidebar.number_input(
+                        label=key + ' ' + str(i), value=v, min_value=0))
                 elif isinstance(v, float):
-                    tuple_params.append(st.sidebar.number_input(label=key + ' ' + str(i), value=v, min_value=0.0))
+                    tuple_params.append(st.sidebar.number_input(
+                        label=key + ' ' + str(i), value=v, min_value=0.0))
                 elif isinstance(v, str):
-                    tuple_params.append(st.sidebar.text_input(key + ' ' + str(i), v))
+                    tuple_params.append(
+                        st.sidebar.text_input(key + ' ' + str(i), v))
             tuple_params = tuple(tuple_params)
             model_params[key] = tuple_params
 
