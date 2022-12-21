@@ -12,7 +12,7 @@ pip install -r requirements.txt
 There are two environment variables that needs to be set:
 
 ```
-export DATABASE_URL="DATABASE_URL"
+export DATABASE_URL="sqlite:///database.db"
 ```
 
 The project is currently using CockroachDB cloud, but it was tested with SQLite as well.
