@@ -1,8 +1,8 @@
 requests
 pandas
 psycopg2-binary
-sqlalchemy
-sqlalchemy-cockroachdb
+sqlalchemy==1.4.46
+sqlalchemy-cockroachdb==1.4.4
 statsmodels
 xgboost
 scikit-learn
