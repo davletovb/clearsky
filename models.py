@@ -17,6 +17,7 @@ class City(Base):
     aqi_data = relationship('AQIData')
     aqi_forecasts = relationship('AQIForecast')
     model_files = relationship('ModelFiles')
+    aqi_interpretations = relationship('AQIInterpretation')
 
 
 class AQIData(Base):
@@ -60,3 +61,13 @@ class ModelFiles(Base):
     model_file = Column(BLOB)
     model_path = Column(String)
     model_date = Column(DateTime)
+
+
+class AQIInterpretation(Base):
+    __tablename__ = 'aqi_interpretations'
+
+    id = Column(Integer, primary_key=True)
+    city_id = Column(Integer, ForeignKey('cities.id'))
+    model_name = Column(String)
+    interpretation = Column(String)
+    timestamp_local = Column(DateTime)

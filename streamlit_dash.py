@@ -2,17 +2,18 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import datetime
 
 from aqiforecaster import ARIMAForecaster
 from aqiforecaster import XGBoostForecaster
 from aqiforecaster import ExponentialSmoothingForecaster
 from aqioperator import AQIOperator
+from aqi_interpreter import AQIInterpreter
 
 
 def get_city_list():
     """
     Get list of cities for which AQI data is available.
-
     Returns:
         List of cities.
     """
@@ -65,7 +66,6 @@ def get_daily_forecasted_data(city_name, forecast_model='ARIMA'):
 def get_forecast_models():
     """
     Get list of available forecast models and corresponding class names.
-
     Returns:
         List of available forecast models.
     """
@@ -83,7 +83,6 @@ def get_forecast_models():
 def get_forecast_model_params():
     """
     List of default parameters for each forecast model.
-
     """
 
     forecast_model_params = [
@@ -102,10 +101,8 @@ def get_forecast_model_params():
 def get_forecast_model_class(forecast_model):
     """
     Get class name for a given forecast model.
-
     Args:
         forecast_model: Name of the forecast model.
-
     Returns:
         Class name for the forecast model.
     """
@@ -120,10 +117,8 @@ def get_forecast_model_class(forecast_model):
 def get_default_params(forecast_model):
     """
     Get default parameters for a given forecast model.
-
     Args:
         forecast_model: Name of the forecast model.
-
     Returns:
         Default parameters for the forecast model.
     """
@@ -142,10 +137,9 @@ def get_default_params(forecast_model):
 def get_forecast_model(forecast_model, model_params):
     """
     Get class name for a given forecast model.
-
     Args:
         forecast_model: Name of the forecast model.
-
+        model_params: Parameters for the forecast model.
     Returns:
         Class name for the forecast model.
     """
@@ -165,6 +159,9 @@ def get_forecast(city_name, forecast_length, forecaster, model_params):
     Train a forecast model and get AQI forecast for the next n days.
     Args:
         city_name: Name of the city.
+        forecast_length: Number of days for which AQI forecast is required.
+        forecaster: Name of the forecast model.
+        model_params: Parameters for the forecast model.
     Returns:
         Aqi forecast for the next n days.
     """
@@ -181,7 +178,42 @@ def get_forecast(city_name, forecast_length, forecaster, model_params):
     return forecasts
 
 
-# show the data and forecasts on streamlit app
+def get_interpretation(city_name, todays_data, history_data, future_forecasts, model_name='ARIMA'):
+    """
+    Get interpretation for the AQI forecast.
+    Args:
+        city_name: Name of the city.
+        todays_data: AQI data for today.
+        history_data: Historical AQI data.
+        future_forecasts: AQI forecast for the next n days.
+    Returns:
+        Interpretation for the AQI forecast.
+    """
+
+    # check if the interpretation for the forecast already exists in the database
+    aqi_operator = AQIOperator()
+
+    date = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    interpretation = aqi_operator.get_aqi_interpretation_by_city(
+        city_name, date, model_name)
+
+    if interpretation:
+        return interpretation
+
+    # generate interpretation for the forecast if it does not exist in the database
+    interpreter = AQIInterpreter()
+
+    interpretation = interpreter.interpret(
+        city_name, todays_data, history_data, future_forecasts)
+
+    # save interpretation to database
+    aqi_operator.save_aqi_interpretation_by_city(
+        city_name, interpretation, date, model_name)
+
+    return interpretation
+
+
 def show_data_and_forecasts(city_name, forecast_length, forecaster, model_params):
     """
     Show historical aqi data and forecasted aqi data on streamlit app.
@@ -203,6 +235,10 @@ def show_data_and_forecasts(city_name, forecast_length, forecaster, model_params
     future_forecasts = get_forecast(city_name, forecast_length,
                                     forecaster, model_params)
 
+    # get interpretation for the forecast
+    interpretation = get_interpretation(
+        city_name, history_data.iloc[-1], history_data, future_forecasts, forecaster)
+
     # convert forecasts to dataframe with timestamp_local and aqi as column names
     future_forecasts = pd.DataFrame(future_forecasts)
     future_forecasts['timestamp_local'] = pd.to_datetime(
@@ -212,6 +248,9 @@ def show_data_and_forecasts(city_name, forecast_length, forecaster, model_params
     st.markdown(
         'Here is the historical and forecasted air quality index for the next {} days in {}'.format(forecast_length, city_name))
     st.markdown('---')
+
+    st.markdown('#### Explanation')
+    st.markdown(interpretation)
 
     # plot historical aqi data and forecasted aqi data on the same chart, with different colors
     fig = px.line(history_data, x='timestamp_local', y='aqi',

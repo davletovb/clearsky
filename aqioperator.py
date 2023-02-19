@@ -1,5 +1,5 @@
 # This class is for all data management operations
-from models import City, AQIData, AQIForecast, ModelFiles, Base
+from models import City, AQIData, AQIForecast, AQIInterpretation, ModelFiles, Base
 import os
 import pandas as pd
 import requests
@@ -212,6 +212,36 @@ class AQIOperator:
                 self.session.add(aqi_forecast)
                 # commit changes to database
                 self.session.commit()
+
+        self.session.close()
+
+    def save_aqi_interpretation_by_city(self, city_name, interpretation, date, model_name="ARIMA"):
+        # save aqi interpretation data for city
+        city = self.session.query(City).filter(
+            City.city_name == city_name).first()
+
+        if city:
+            aqi_interpretation = self.session.query(AQIInterpretation).filter(
+                AQIInterpretation.city_id == city.id, AQIInterpretation.timestamp_local == datetime.fromisoformat(date), AQIInterpretation.model_name == model_name).first()
+            if not aqi_interpretation:
+                aqi_interpretation = AQIInterpretation(
+                    city_id=city.id, interpretation=interpretation, model_name=model_name, timestamp_local=datetime.fromisoformat(date))
+                # add aqi data object to session
+                self.session.add(aqi_interpretation)
+                # commit changes to database
+                self.session.commit()
+
+        self.session.close()
+
+    def get_aqi_interpretation_by_city(self, city_name, date, model_name="ARIMA"):
+        # get aqi data for city
+        city = self.session.query(City).filter(
+            City.city_name == city_name).first()
+        if city:
+            aqi_interpretation = self.session.query(AQIInterpretation).filter(
+                AQIInterpretation.city_id == city.id, AQIInterpretation.timestamp_local == datetime.fromisoformat(date), AQIInterpretation.model_name == model_name).first()
+            if aqi_interpretation:
+                return aqi_interpretation.interpretation
 
         self.session.close()
 
